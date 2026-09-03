@@ -33,14 +33,14 @@
   *{box-sizing:border-box;}
   body{
     margin:0;
-    background:var(--cream);
+    background:radial-gradient(circle at 15% 0%, #eef3fa 0, transparent 34%),var(--cream);
     color:var(--ink);
-    font-family:'Calibri','Carlito','Noto Sans SC',-apple-system,sans-serif;
+    font-family:'Noto Sans SC','Carlito',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
     line-height:1.6;
     font-size:15px;
   }
   .heading{font-family:'Fredoka','Noto Sans SC',sans-serif;font-weight:700;}
-  .page{max-width:600px;margin:0 auto;padding:56px 20px 80px;position:relative;}
+  .page{max-width:620px;margin:0 auto;padding:56px 20px 80px;position:relative;}
 
   .lang-toggle{
     position:fixed;top:16px;right:16px;
@@ -54,7 +54,7 @@
   @keyframes fadein{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
 
   /* ---------- hero ---------- */
-  .hero{padding:4px 0 24px;border-bottom:1px solid var(--line);margin-bottom:24px;}
+  .hero{padding:22px 24px;margin-bottom:24px;background:rgba(255,255,255,.72);border:1px solid rgba(231,227,223,.9);border-radius:20px;box-shadow:0 16px 50px rgba(80,94,116,.08);backdrop-filter:blur(8px);}
   .hero-top{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
   .hero h1{font-size:32px;margin:0;color:var(--ink);line-height:1.15;}
   .hero .sub{color:var(--ink-soft);font-size:13.5px;margin-top:8px;}
@@ -76,13 +76,14 @@
   .type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
   .type-card{
     position:relative;cursor:pointer;background:var(--paper);border:1.5px solid var(--line);border-radius:12px;
-    padding:12px 6px;text-align:center;transition:border-color .15s ease, background .15s ease;
+    padding:14px 6px;text-align:center;transition:border-color .15s ease, background .15s ease, transform .15s ease, box-shadow .15s ease;
     user-select:none;
   }
   .type-card .swatch{position:absolute;top:8px;right:8px;width:6px;height:6px;border-radius:50%;}
   .type-card .emoji{font-size:21px;display:block;margin-bottom:6px;}
   .type-card .label{font-size:12px;font-weight:700;line-height:1.25;}
   .type-card.selected{border-color:var(--card-accent);background:var(--card-tint);}
+  .type-card:hover,.companion-card:hover,.option-card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(74,84,104,.09);}
   .type-card.selected .label{color:var(--card-deep);}
 
   .custom-box{margin-top:12px;display:none;}
@@ -143,7 +144,8 @@
   }
   .btn:active{transform:translateY(0) scale(.99);}
   .btn-primary{background:var(--accent);color:#fff;width:100%;}
-  .btn-primary:hover{background:var(--accent-deep);}
+  .btn-primary{box-shadow:0 8px 20px rgba(95,122,158,.22);}
+  .btn-primary:hover{background:var(--accent-deep);transform:translateY(-1px);}
   .btn-ghost{background:none;color:var(--ink-soft);border:1.5px solid var(--line);}
   .btn-ghost:hover{border-color:var(--ink-soft);}
   .btn-row{display:flex;gap:10px;margin-top:22px;}
@@ -175,10 +177,13 @@
     cursor:pointer;background:var(--paper);transition:border-color .12s ease, background .12s ease;
   }
   .time-row .t{font-weight:800;font-size:14.5px;}
+  .time-row .time-main{display:flex;flex-direction:column;gap:1px;}
+  .time-row .tz-note{font-size:10.5px;color:var(--ink-soft);font-weight:500;}
   .time-row .status{font-size:11.5px;color:var(--ink-soft);}
   .time-row.blocked{opacity:.4;cursor:not-allowed;}
   .time-row.selected{border-color:var(--accent);background:var(--accent-tint);}
   .time-row.selected .status{color:var(--accent-deep);font-weight:700;}
+  .timezone-note{display:flex;align-items:flex-start;gap:8px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:-2px 0 14px;font-size:11.5px;color:var(--ink-soft);}
   .change-link{background:none;border:none;color:var(--accent-deep);font-size:12px;font-weight:700;text-decoration:underline;cursor:pointer;padding:0;}
 
   /* ---------- confirmation: boarding-pass style ---------- */
@@ -186,6 +191,11 @@
     position:relative;background:var(--paper);border:2px dashed var(--accent);
     border-radius:4px;padding:26px 24px;
   }
+  .utility-links{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;}
+  .confetti-layer{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:50;}
+  .confetti-piece{position:absolute;top:-20px;width:9px;height:15px;border-radius:2px;animation:confettiFall 2.2s cubic-bezier(.2,.7,.3,1) forwards;}
+  @keyframes confettiFall{0%{transform:translate3d(0,-5vh,0) rotate(0);opacity:1}100%{transform:translate3d(var(--drift),105vh,0) rotate(var(--spin));opacity:.15}}
+  @media (prefers-reduced-motion:reduce){.confetti-piece{display:none}.view.active,.shake{animation:none!important}}
   .confirm-card::before, .confirm-card::after{
     content:'';position:absolute;top:50%;width:18px;height:18px;border-radius:50%;
     background:var(--cream);transform:translateY(-50%);
@@ -323,9 +333,20 @@
     </div>
 
     <div class="admin-footer">
-      <button type="button" class="admin-link" id="adminEntryLink" data-i18n="adminEntry">管理预约</button>
+      <div class="utility-links">
+        <button type="button" class="admin-link" id="myBookingsLink" data-i18n="myBookings">我的预约</button>
+        <button type="button" class="admin-link" id="adminEntryLink" data-i18n="adminEntry">管理预约</button>
+      </div>
     </div>
     <p class="disclaimer" data-i18n="disclaimer">此页面上的时间由页面所有者管理，管理入口仅供本人使用</p>
+  </div>
+
+  <!-- ===================== VIEW: MY BOOKINGS ===================== -->
+  <div class="view" id="view-mybookings">
+    <button type="button" class="back-link" data-goto="book" data-i18n="backBtn">← 返回</button>
+    <p class="section-title heading" data-i18n="myBookings">我的预约</p>
+    <p class="section-sub" data-i18n="myBookingsSub">仅显示保存在当前浏览器中的预约</p>
+    <div id="myBookingsList"></div>
   </div>
 
   <!-- ===================== VIEW: TIME (step 2) ===================== -->
@@ -343,6 +364,7 @@
     <div class="section">
       <p class="section-title heading" data-i18n="timeTitle">选择开始和结束时间</p>
       <p class="section-sub" data-i18n="timeSub">太靠近其他预约的时间会自动跳过</p>
+      <div class="timezone-note" id="timezoneNote"></div>
 
       <div class="date-strip" id="dateStrip"></div>
 
@@ -412,6 +434,7 @@
   </div>
 
 </div>
+<div class="confetti-layer" id="confettiLayer" aria-hidden="true"></div>
 
 <script>
 const TEXT = {
@@ -438,9 +461,19 @@ const TEXT = {
   nextBtn:{zh:'下一步 →', en:'Next →'},
   backBtn:{zh:'← 返回', en:'← Back'},
   adminEntry:{zh:'管理预约', en:'Manage schedule'},
+  myBookings:{zh:'我的预约', en:'My bookings'},
+  myBookingsSub:{zh:'可查看和取消保存在当前浏览器中的预约', en:'View and cancel bookings saved in this browser'},
+  noMyBookings:{zh:'当前浏览器中没有待进行的预约。', en:'No upcoming bookings in this browser.'},
+  cancelledEmailSent:{zh:'预约已取消，取消通知邮件已发出。', en:'Booking cancelled and notification email sent.'},
+  cancelledEmailFailed:{zh:'预约已取消，但取消通知邮件发送失败，请直接联系页面所有者。', en:'Booking cancelled, but the notification email failed. Please contact the page owner.'},
   disclaimer:{zh:'此页面上的时间由页面所有者管理，管理入口仅供本人使用', en:'Times here are managed by the page owner; the admin entry is for owner use only.'},
   timeTitle:{zh:'选择开始和结束时间', en:'Pick a start and end time'},
   timeSub:{zh:'太靠近其他预约的时间会自动跳过', en:'Times too close to another plan are skipped'},
+  localTimeLabel:{zh:'你的当地时间', en:'Your local time'},
+  easternTimeLabel:{zh:'美东时间', en:'Eastern Time'},
+  sameEasternTime:{zh:'你的当地时间与美东时间一致', en:'Your local time matches Eastern Time'},
+  timezoneIntro:{zh:'日期以美东时间为准；每个时段同时显示你的当地时间。无需定位权限。', en:'Dates are based on Eastern Time; each slot also shows your local time. No location permission is used.'},
+  pastStatus:{zh:'已过', en:'Past'},
   chooseStart:{zh:'选择开始时间', en:'Choose a start time'},
   chooseEnd:{zh:'选择结束时间', en:'Choose an end time'},
   changeStart:{zh:'更改开始时间', en:'change start'},
@@ -510,6 +543,8 @@ const ADMIN_PASSCODE = "1234";
 const BUFFER_MIN = 60;
 const DAY_START = 8*60, DAY_END = 21*60+30, MAX_DURATION = 240, STEP = 30;
 const DATE_RANGE_DAYS = 14;
+const OWNER_TIME_ZONE = 'America/New_York';
+const VISITOR_TIME_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
 
 let lang = 'zh';
 let step1Data = null;
@@ -542,12 +577,14 @@ function applyLang(){
   });
   if(document.getElementById('view-time').classList.contains('active')){
     renderTimeSummary();
+    renderTimezoneNote();
     buildDateStrip();
     if(!selectedStart){ populateStartList(); } else { populateEndList(); }
   }
   if(document.getElementById('view-confirmed').classList.contains('active') && lastBooking){
     renderConfirmation(lastBooking, !!lastBooking.__cancelled);
   }
+  if(document.getElementById('view-mybookings').classList.contains('active')) renderMyBookings();
   if(adminUnlocked) renderAdminList();
 }
 document.getElementById('langToggle').addEventListener('click', ()=>{
@@ -578,6 +615,11 @@ function route(){
       document.getElementById('adminGateWrap').style.display='block';
       document.getElementById('adminContent').style.display='none';
     }
+    return;
+  }
+  if(hash === 'mybookings'){
+    showView('mybookings');
+    renderMyBookings();
     return;
   }
   showView(hash);
@@ -737,12 +779,53 @@ function isoDate(d){ return d.toISOString().split('T')[0]; }
 function dowShort(d){ return ['SUN','MON','TUE','WED','THU','FRI','SAT'][d.getDay()]; }
 function dowZh(d){ return ['周日','周一','周二','周三','周四','周五','周六'][d.getDay()]; }
 
+function partsInZone(date, timeZone){
+  const parts = new Intl.DateTimeFormat('en-US',{timeZone,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).formatToParts(date);
+  return Object.fromEntries(parts.filter(p=>p.type!=='literal').map(p=>[p.type,p.value]));
+}
+function ownerToday(){
+  const p = partsInZone(new Date(), OWNER_TIME_ZONE);
+  return `${p.year}-${p.month}-${p.day}`;
+}
+function addDays(dateStr, days){
+  const [y,m,d] = dateStr.split('-').map(Number);
+  return isoDate(new Date(Date.UTC(y,m-1,d+days,12)));
+}
+function zonedTimeToDate(dateStr, minutes, timeZone=OWNER_TIME_ZONE){
+  const [y,m,d] = dateStr.split('-').map(Number);
+  const h = Math.floor(minutes/60), min = minutes%60;
+  const targetUtc = Date.UTC(y,m-1,d,h,min,0);
+  let guess = new Date(targetUtc);
+  for(let i=0;i<2;i++){
+    const p = partsInZone(guess,timeZone);
+    const shownUtc = Date.UTC(+p.year,+p.month-1,+p.day,+p.hour,+p.minute,+p.second);
+    guess = new Date(guess.getTime() + (targetUtc-shownUtc));
+  }
+  return guess;
+}
+function formatZoneDateTime(dateStr, minutes, timeZone){
+  const instant = zonedTimeToDate(dateStr, minutes);
+  return new Intl.DateTimeFormat(lang==='zh'?'zh-CN':'en-US',{
+    timeZone,month:'numeric',day:'numeric',hour:'numeric',minute:'2-digit',hour12:true
+  }).format(instant);
+}
+function timeRowHtml(dateStr, minutes, status){
+  const local = formatZoneDateTime(dateStr, minutes, VISITOR_TIME_ZONE);
+  const eastern = formatZoneDateTime(dateStr, minutes, OWNER_TIME_ZONE);
+  const sameTime = local === eastern;
+  const primary = sameTime ? eastern : local;
+  const sub = sameTime
+    ? `${TEXT.sameEasternTime[lang]} · ${VISITOR_TIME_ZONE}`
+    : `${TEXT.localTimeLabel[lang]} · ${VISITOR_TIME_ZONE}　|　${TEXT.easternTimeLabel[lang]} ${eastern}`;
+  return `<span class="time-main"><span class="t">${primary}</span><span class="tz-note">${sub}</span></span><span class="status">${status}</span>`;
+}
+
 function buildDateStrip(){
   dateStrip.innerHTML = '';
-  const base = new Date();
+  const base = ownerToday();
   for(let i=0;i<DATE_RANGE_DAYS;i++){
-    const d = new Date(base.getTime() + i*24*60*60*1000);
-    const iso = isoDate(d);
+    const iso = addDays(base, i);
+    const d = new Date(iso + 'T12:00:00Z');
     const chip = document.createElement('div');
     chip.className = 'date-chip' + (iso === selectedDate ? ' selected' : '');
     chip.dataset.date = iso;
@@ -761,11 +844,18 @@ function buildDateStrip(){
 }
 
 function prepareTimeView(){
-  if(!selectedDate) selectedDate = isoDate(new Date());
+  if(!selectedDate || selectedDate < ownerToday()) selectedDate = ownerToday();
+  renderTimezoneNote();
   renderTimeSummary();
   buildDateStrip();
   if(selectedStart){ startSection.style.display='none'; populateEndList(); }
   else { populateStartList(); }
+}
+function renderTimezoneNote(){
+  const nowOwner = partsInZone(new Date(),OWNER_TIME_ZONE), nowVisitor = partsInZone(new Date(),VISITOR_TIME_ZONE);
+  const sameNow = `${nowOwner.year}${nowOwner.month}${nowOwner.day}${nowOwner.hour}${nowOwner.minute}` === `${nowVisitor.year}${nowVisitor.month}${nowVisitor.day}${nowVisitor.hour}${nowVisitor.minute}`;
+  const zones = sameNow ? `${TEXT.sameEasternTime[lang]}（${VISITOR_TIME_ZONE}）` : `<b>${TEXT.localTimeLabel[lang]}：</b>${VISITOR_TIME_ZONE}　·　<b>${TEXT.easternTimeLabel[lang]}：</b>${OWNER_TIME_ZONE}`;
+  document.getElementById('timezoneNote').innerHTML = `🌍 <span>${TEXT.timezoneIntro[lang]}<br>${zones}</span>`;
 }
 
 function fmtTime(minutes){
@@ -791,10 +881,12 @@ async function populateStartList(){
 
   startList.innerHTML = '';
   for(let m = DAY_START; m <= DAY_END; m += STEP){
-    const isBlocked = blocked.some(([s,e]) => m > s && m < e);
+    const isPast = zonedTimeToDate(selectedDate, m).getTime() <= Date.now();
+    const isBlocked = isPast || blocked.some(([s,e]) => m > s && m < e);
+    const status = isPast ? TEXT.pastStatus[lang] : (isBlocked ? TEXT.blockedStatus[lang] : TEXT.openStatus[lang]);
     const row = document.createElement('div');
     row.className = 'time-row' + (isBlocked ? ' blocked' : '');
-    row.innerHTML = `<span class="t">${fmtTime(m)}</span><span class="status">${isBlocked ? TEXT.blockedStatus[lang] : TEXT.openStatus[lang]}</span>`;
+    row.innerHTML = timeRowHtml(selectedDate, m, status);
     if(!isBlocked){
       row.addEventListener('click', ()=>{
         selectedStart = m;
@@ -819,7 +911,7 @@ async function populateEndList(){
     const overlaps = blocked.some(([s,e]) => rangesOverlap(selectedStart, m, s, e));
     const row = document.createElement('div');
     row.className = 'time-row' + (overlaps ? ' blocked' : '') + (m === selectedEnd ? ' selected' : '');
-    row.innerHTML = `<span class="t">${fmtTime(m)}</span><span class="status">${overlaps ? TEXT.blockedStatus[lang] : (m === selectedEnd ? TEXT.selectedStatus[lang] : TEXT.openStatus[lang])}</span>`;
+    row.innerHTML = timeRowHtml(selectedDate, m, overlaps ? TEXT.blockedStatus[lang] : (m === selectedEnd ? TEXT.selectedStatus[lang] : TEXT.openStatus[lang]));
     if(!overlaps){
       row.addEventListener('click', ()=>{
         selectedEnd = m;
@@ -879,14 +971,22 @@ function fmtDate(d){
   const dt = new Date(d + 'T00:00:00');
   return `${dt.getMonth()+1}/${dt.getDate()} ${lang==='zh' ? dowZh(dt) : dowShort(dt)}`;
 }
+function formatRangeInZone(booking, timeZone){
+  return `${formatZoneDateTime(booking.date, booking.startMinutes, timeZone)} – ${new Intl.DateTimeFormat(lang==='zh'?'zh-CN':'en-US',{timeZone,hour:'numeric',minute:'2-digit',hour12:true}).format(zonedTimeToDate(booking.date, booking.endMinutes))}`;
+}
 
 function renderConfirmation(booking, cancelled){
   const card = document.getElementById('confirmCard');
   const label = typeLabel(booking);
+  const localRange = formatRangeInZone(booking,VISITOR_TIME_ZONE);
+  const easternRange = formatRangeInZone(booking,OWNER_TIME_ZONE);
+  const timeSummary = localRange === easternRange
+    ? `<b>${TEXT.easternTimeLabel[lang]}：</b>${easternRange}`
+    : `<b>${TEXT.localTimeLabel[lang]}：</b>${localRange}<br><b>${TEXT.easternTimeLabel[lang]}：</b>${easternRange}`;
   let html = `<span class="em">${booking.emoji}</span>
     <h3 class="heading">${booking.__saved ? TEXT.bookedTitle[lang] : TEXT.reviewTitle[lang]}</h3>
     <p class="who">${label} ${TEXT.withLabel[lang]} <b>${booking.name}</b>${booking.who ? ' & '+booking.who : ''}</p>
-    <div class="confirm-line">${fmtDate(booking.date)} · <b>${fmtTime(booking.startMinutes)} – ${fmtTime(booking.endMinutes)}</b></div>`;
+    <div class="confirm-line">🕐 <span>${timeSummary}</span></div>`;
   if(booking.callMethodId){
     const method = CALL_METHODS.find(x=>x.id===booking.callMethodId);
     html += `<div class="confirm-line">${method.emoji} <b>${method[lang]}</b>${booking.meetingDetail ? ' · '+escapeHtml(booking.meetingDetail) : ''}</div>`;
@@ -903,8 +1003,7 @@ function renderConfirmation(booking, cancelled){
   document.getElementById('emailPanel').style.display = booking.__saved || cancelled ? 'none' : 'block';
   if(!cancelled && booking.__saved){
     document.getElementById('cancelBookingBtn').addEventListener('click', async ()=>{
-      const list = await loadBookings();
-      await saveBookings(list.filter(b=>b.id !== booking.id));
+      await cancelBooking(booking);
       lastBooking.__cancelled = true;
       renderConfirmation(booking, true);
     });
@@ -939,21 +1038,34 @@ document.getElementById('finalizeBtn').addEventListener('click', async ()=>{
   }
   lastBooking.__saved = true;
   renderConfirmation(lastBooking, false);
+  launchConfetti();
   document.getElementById('emailPanel').style.display = 'block';
   input.disabled = true; button.style.display = 'none';
   status.textContent = TEXT[resultKey][lang];
   status.className = 'send-status' + (resultKey === 'emailFailed' ? ' error-text' : '');
 });
 
-async function sendBookingEmail(booking){
+function fmtEmailDate(d){
+  const dt = new Date(d + 'T00:00:00');
+  return lang === 'zh'
+    ? `${dt.getMonth()+1}月${dt.getDate()}日 ${dowZh(dt)}`
+    : `${dowShort(dt)}, ${dt.toLocaleString('en-US',{month:'short'})} ${dt.getDate()}`;
+}
+
+async function sendBookingEmail(booking, status='confirmed'){
   const method = booking.callMethodId ? CALL_METHODS.find(x=>x.id===booking.callMethodId)[lang] : '';
   const params = {
     to_email: booking.email,
     owner_email: EMAIL_CONFIG.ownerEmail,
     guest_name: booking.name,
     activity: typeLabel(booking),
-    date: fmtDate(booking.date),
-    time: `${fmtTime(booking.startMinutes)} – ${fmtTime(booking.endMinutes)}`,
+    status: status === 'cancelled' ? (lang==='zh'?'预约已取消':'Booking cancelled') : (lang==='zh'?'预约确认':'Booking confirmed'),
+    date: fmtEmailDate(booking.date),
+    time: `${fmtTime(booking.startMinutes)} – ${fmtTime(booking.endMinutes)} ${lang==='zh'?'美东时间':'Eastern Time'}`,
+    local_date: formatZoneDateTime(booking.date, booking.startMinutes, VISITOR_TIME_ZONE).split(' ')[0],
+    local_time: formatRangeInZone(booking, VISITOR_TIME_ZONE),
+    user_timezone: VISITOR_TIME_ZONE,
+    owner_timezone: OWNER_TIME_ZONE,
     location: booking.location || booking.meetingDetail || (lang==='zh'?'未填写':'Not specified'),
     call_method: method
   };
@@ -962,6 +1074,24 @@ async function sendBookingEmail(booking){
     body:JSON.stringify({service_id:EMAIL_CONFIG.serviceId,template_id:EMAIL_CONFIG.templateId,user_id:EMAIL_CONFIG.publicKey,template_params:params})
   });
   if(!res.ok) throw new Error('EmailJS send failed');
+}
+
+function launchConfetti(){
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const layer = document.getElementById('confettiLayer');
+  const colors = ['#8FA8C8','#D9A7B0','#E3C77E','#9BC0A6','#B7A7D9','#E3AE8E'];
+  layer.innerHTML = '';
+  for(let i=0;i<54;i++){
+    const piece = document.createElement('i');
+    piece.className = 'confetti-piece';
+    piece.style.left = Math.random()*100+'vw';
+    piece.style.background = colors[i%colors.length];
+    piece.style.setProperty('--drift', (Math.random()*180-90)+'px');
+    piece.style.setProperty('--spin', (Math.random()*900+360)+'deg');
+    piece.style.animationDelay = Math.random()*.45+'s';
+    layer.appendChild(piece);
+  }
+  setTimeout(()=>{ layer.innerHTML=''; }, 3000);
 }
 
 document.getElementById('startOverBtn').addEventListener('click', ()=>{
@@ -1008,6 +1138,47 @@ async function saveBookings(list){
     else localStorage.setItem('bookings', JSON.stringify(list));
   }
   catch(e){ console.error('保存失败', e); }
+}
+
+/* ---------------- visitor bookings ---------------- */
+document.getElementById('myBookingsLink').addEventListener('click', ()=>{ window.location.hash = '#mybookings'; });
+
+async function cancelBooking(booking){
+  const list = await loadBookings();
+  await saveBookings(list.filter(b=>b.id !== booking.id));
+  if(Object.values(EMAIL_CONFIG).every(Boolean)){
+    try{ await sendBookingEmail(booking, 'cancelled'); return true; }
+    catch(e){ return false; }
+  }
+  return false;
+}
+
+async function renderMyBookings(){
+  const list = await loadBookings();
+  const today = isoDate(new Date());
+  const upcoming = list.filter(b=>b.date >= today).sort((a,b)=>`${a.date}-${a.startMinutes}`.localeCompare(`${b.date}-${b.startMinutes}`));
+  const wrap = document.getElementById('myBookingsList');
+  if(!upcoming.length){ wrap.innerHTML = `<div class="upcoming-empty">${TEXT.noMyBookings[lang]}</div>`; return; }
+  wrap.innerHTML = '';
+  upcoming.forEach(b=>{
+    const item = document.createElement('div');
+    item.className = 'book-item';
+    item.innerHTML = `<span class="em">${b.emoji}</span>
+      <div class="info"><div class="top">${escapeHtml(typeLabel(b))} · ${escapeHtml(b.name)}</div>
+      <div class="meta">${fmtDate(b.date)} · ${fmtTime(b.startMinutes)} – ${fmtTime(b.endMinutes)}${b.location ? ' · '+escapeHtml(b.location) : ''}</div></div>
+      <button class="del" type="button">${TEXT.cancelItem[lang]}</button>`;
+    item.querySelector('.del').addEventListener('click', async e=>{
+      const button = e.currentTarget;
+      button.disabled = true;
+      const mailed = await cancelBooking(b);
+      await renderMyBookings();
+      const note = document.createElement('p');
+      note.className = 'send-status' + (mailed ? '' : ' error-text');
+      note.textContent = mailed ? TEXT.cancelledEmailSent[lang] : TEXT.cancelledEmailFailed[lang];
+      wrap.prepend(note);
+    });
+    wrap.appendChild(item);
+  });
 }
 
 /* ---------------- admin ---------------- */
@@ -1073,6 +1244,18 @@ async function renderAdminList(){
 /* ---------------- init ---------------- */
 applyLang();
 route();
+setInterval(()=>{
+  if(!document.getElementById('view-time').classList.contains('active')) return;
+  const today = ownerToday();
+  if(selectedDate < today){
+    selectedDate = today; selectedStart = null; selectedEnd = null;
+    buildDateStrip(); populateStartList(); return;
+  }
+  if(selectedStart && zonedTimeToDate(selectedDate, selectedStart).getTime() <= Date.now()){
+    selectedStart = null; selectedEnd = null; renderTimeSummary(); populateStartList();
+  }else if(selectedStart){ populateEndList(); }
+  else populateStartList();
+}, 60000);
 </script>
 </body>
 </html>
