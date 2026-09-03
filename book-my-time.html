@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>预约我的时间 · Book Some Time</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Carlito:wght@400;700&family=Fredoka:wght@500;600;700&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#F6F5F1;
+    --paper:#FFFFFF;
+    --ink:#3E3B41;
+    --ink-soft:#8B8790;
+    --line:#E7E3DF;
+    --red:#B0645A;
+
+    --accent:#8FA8C8;
+    --accent-deep:#5F7A9E;
+    --accent-tint:#E9EEF5;
+
+    --map-accent:#7FA98D;
+    --map-deep:#4F7860;
+
+    --t-meal:#D9A7B0;    --t-meal-deep:#A9727C;   --t-meal-tint:#F6E9EB;
+    --t-movie:#A7B8D9;   --t-movie-deep:#6F84AC;  --t-movie-tint:#E9EDF6;
+    --t-coffee:#E3C77E;  --t-coffee-deep:#B89A4A; --t-coffee-tint:#FBF3DE;
+    --t-call:#9BC0A6;    --t-call-deep:#648F72;   --t-call-tint:#E9F3EC;
+    --t-study:#B7A7D9;   --t-study-deep:#8571AC;  --t-study-tint:#EFEAF6;
+    --t-custom:#E3AE8E;  --t-custom-deep:#B87D57; --t-custom-tint:#FBEFE6;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--cream);
+    color:var(--ink);
+    font-family:'Calibri','Carlito','Noto Sans SC',-apple-system,sans-serif;
+    line-height:1.6;
+    font-size:15px;
+  }
+  .heading{font-family:'Fredoka','Noto Sans SC',sans-serif;font-weight:700;}
+  .page{max-width:600px;margin:0 auto;padding:56px 20px 80px;position:relative;}
+
+  .lang-toggle{
+    position:fixed;top:16px;right:16px;
+    background:var(--paper);border:1px solid var(--line);
+    border-radius:999px;padding:7px 14px;font-size:12px;font-weight:700;
+    color:var(--accent-deep);cursor:pointer;z-index:10;font-family:'Calibri','Carlito',sans-serif;
+  }
+
+  .view{display:none;}
+  .view.active{display:block;animation:fadein .18s ease;}
+  @keyframes fadein{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+
+  /* ---------- hero ---------- */
+  .hero{padding:4px 0 24px;border-bottom:1px solid var(--line);margin-bottom:24px;}
+  .hero-top{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+  .hero h1{font-size:32px;margin:0;color:var(--ink);line-height:1.15;}
+  .hero .sub{color:var(--ink-soft);font-size:13.5px;margin-top:8px;}
+
+  /* ---------- progress rail ---------- */
+  .rail{display:flex;align-items:flex-start;margin:22px 0 28px;}
+  .rail .tick{display:flex;flex-direction:column;align-items:center;gap:5px;flex:0 0 auto;width:70px;}
+  .rail .tick .dot{width:7px;height:7px;border-radius:50%;background:var(--line);transition:all .15s ease;}
+  .rail .tick.active .dot{background:var(--accent);width:9px;height:9px;}
+  .rail .tick .lbl{font-size:10.5px;color:var(--ink-soft);white-space:nowrap;text-align:center;line-height:1.3;}
+  .rail .tick.active .lbl{color:var(--accent-deep);font-weight:700;}
+  .rail .rline{flex:1;height:1px;background:var(--line);margin:3px -6px 0;}
+
+  .section{margin-bottom:26px;}
+  .section-title{font-size:17px;margin:0 0 4px;color:var(--ink);}
+  .section-sub{font-size:12.5px;color:var(--ink-soft);margin:0 0 14px;}
+
+  /* ---------- type chips ---------- */
+  .type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+  .type-card{
+    position:relative;cursor:pointer;background:var(--paper);border:1.5px solid var(--line);border-radius:12px;
+    padding:12px 6px;text-align:center;transition:border-color .15s ease, background .15s ease;
+    user-select:none;
+  }
+  .type-card .swatch{position:absolute;top:8px;right:8px;width:6px;height:6px;border-radius:50%;}
+  .type-card .emoji{font-size:21px;display:block;margin-bottom:6px;}
+  .type-card .label{font-size:12px;font-weight:700;line-height:1.25;}
+  .type-card.selected{border-color:var(--card-accent);background:var(--card-tint);}
+  .type-card.selected .label{color:var(--card-deep);}
+
+  .custom-box{margin-top:12px;display:none;}
+  .custom-box.show{display:block;animation:fadein .18s ease;}
+
+  .loc-box{margin-top:14px;display:none;}
+  .loc-box.show{display:block;animation:fadein .18s ease;}
+  .map-note{font-size:12px;color:var(--ink-soft);margin-top:6px;}
+
+  .companion-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
+  .companion-card{
+    cursor:pointer;background:var(--paper);border:1.5px solid var(--line);border-radius:12px;
+    padding:12px 8px;text-align:center;transition:all .15s ease;user-select:none;
+  }
+  .companion-card .emoji{font-size:19px;display:block;margin-bottom:4px;}
+  .companion-card .label{font-size:12px;font-weight:700;}
+  .companion-card.selected{border-color:var(--accent);background:var(--accent-tint);}
+  .companion-card.selected .label{color:var(--accent-deep);}
+  .who-box{margin-top:10px;display:none;}
+  .who-box.show{display:block;}
+
+  input[type=text], input[type=password], textarea{
+    width:100%;font-family:inherit;font-size:14px;padding:11px 14px;border-radius:10px;
+    border:1.5px solid var(--line);background:#fff;color:var(--ink);outline:none;
+    transition:border-color .15s ease;
+  }
+  input:focus, textarea:focus{border-color:var(--accent);}
+  textarea{resize:vertical;min-height:60px;}
+
+  .field{margin-top:14px;}
+  .field label{font-size:13px;font-weight:700;color:var(--ink);display:block;margin-bottom:6px;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+  .error{color:var(--red);font-size:12px;margin-top:8px;display:none;}
+  .error.show{display:block;}
+
+  .btn{
+    padding:12px 20px;border:none;border-radius:10px;font-family:inherit;font-size:14px;
+    font-weight:700;cursor:pointer;transition:transform .12s ease, background .12s ease;
+    text-align:center;
+  }
+  .btn:active{transform:translateY(0) scale(.99);}
+  .btn-primary{background:var(--accent);color:#fff;width:100%;}
+  .btn-primary:hover{background:var(--accent-deep);}
+  .btn-ghost{background:none;color:var(--ink-soft);border:1.5px solid var(--line);}
+  .btn-ghost:hover{border-color:var(--ink-soft);}
+  .btn-row{display:flex;gap:10px;margin-top:22px;}
+  .btn-row .btn-ghost{flex:0 0 auto;}
+  .btn-row .btn-primary{flex:1;}
+
+  .summary-chip{
+    display:inline-flex;align-items:center;gap:8px;background:var(--accent-tint);
+    border:1px solid var(--accent);border-radius:999px;padding:8px 14px;font-size:13px;
+    font-weight:700;margin-bottom:20px;color:var(--accent-deep);
+  }
+
+  /* ---------- date strip ---------- */
+  .date-strip{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 10px;margin-bottom:6px;-webkit-overflow-scrolling:touch;}
+  .date-chip{
+    flex:0 0 auto;width:58px;text-align:center;padding:10px 4px;
+    border:1.5px solid var(--line);border-radius:12px;cursor:pointer;background:var(--paper);
+  }
+  .date-chip .dow{font-size:9.5px;color:var(--ink-soft);letter-spacing:.03em;}
+  .date-chip .day{font-size:16px;font-weight:800;margin-top:3px;}
+  .date-chip.selected{background:var(--accent);border-color:var(--accent);}
+  .date-chip.selected .dow, .date-chip.selected .day{color:#fff;}
+
+  /* ---------- time rows ---------- */
+  .time-list{display:flex;flex-direction:column;gap:8px;max-height:360px;overflow-y:auto;padding-right:2px;}
+  .time-row{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:13px 16px;border:1.5px solid var(--line);border-radius:10px;
+    cursor:pointer;background:var(--paper);transition:border-color .12s ease, background .12s ease;
+  }
+  .time-row .t{font-weight:800;font-size:14.5px;}
+  .time-row .status{font-size:11.5px;color:var(--ink-soft);}
+  .time-row.blocked{opacity:.4;cursor:not-allowed;}
+  .time-row.selected{border-color:var(--accent);background:var(--accent-tint);}
+  .time-row.selected .status{color:var(--accent-deep);font-weight:700;}
+  .change-link{background:none;border:none;color:var(--accent-deep);font-size:12px;font-weight:700;text-decoration:underline;cursor:pointer;padding:0;}
+
+  /* ---------- confirmation: boarding-pass style ---------- */
+  .confirm-card{
+    position:relative;background:var(--paper);border:2px dashed var(--accent);
+    border-radius:4px;padding:26px 24px;
+  }
+  .confirm-card::before, .confirm-card::after{
+    content:'';position:absolute;top:50%;width:18px;height:18px;border-radius:50%;
+    background:var(--cream);transform:translateY(-50%);
+  }
+  .confirm-card::before{left:-10px;}
+  .confirm-card::after{right:-10px;}
+  .confirm-card .em{font-size:28px;}
+  .confirm-card h3{margin:8px 0 4px;font-size:22px;color:var(--ink);}
+  .confirm-card .who{font-size:13px;color:var(--ink-soft);margin:0 0 14px;}
+  .confirm-line{display:flex;gap:8px;font-size:14px;margin:6px 0;color:var(--ink-soft);}
+  .confirm-line b{color:var(--ink);font-weight:700;}
+  .map-btn{
+    display:inline-flex;align-items:center;gap:6px;margin-top:14px;padding:11px 18px;
+    border-radius:999px;background:var(--map-deep);color:#fff;text-decoration:none;
+    font-size:13px;font-weight:800;
+  }
+  .cancel-link{
+    display:block;margin-top:16px;background:none;border:none;color:var(--red);
+    font-size:13px;font-weight:700;cursor:pointer;text-decoration:underline;padding:0;
+  }
+  .cancelled-note{font-size:13px;color:var(--ink-soft);margin-top:10px;}
+
+  .admin-gate{max-width:320px;margin:0 auto;text-align:center;}
+  .admin-gate .row2{margin-top:14px;}
+  .admin-error{color:var(--red);font-size:12px;text-align:center;margin-top:10px;display:none;}
+  .admin-error.show{display:block;}
+
+  .stats-row{display:flex;gap:10px;margin-bottom:20px;}
+  .stat-card{flex:1;background:var(--accent-tint);border-radius:12px;padding:14px;text-align:center;}
+  .stat-card .num{font-size:24px;font-weight:800;color:var(--accent-deep);}
+  .stat-card .lbl{font-size:10.5px;color:var(--ink-soft);margin-top:2px;}
+
+  .upcoming-empty{text-align:center;color:var(--ink-soft);font-size:13px;padding:24px;}
+  .book-item{display:flex;align-items:flex-start;gap:12px;border-bottom:1px solid var(--line);padding:14px 2px;}
+  .book-item .em{font-size:19px;}
+  .book-item .info{flex:1;min-width:0;}
+  .book-item .info .top{font-size:13.5px;font-weight:800;}
+  .book-item .info .meta{font-size:12px;color:var(--ink-soft);margin-top:2px;}
+  .book-item .del{border:none;background:none;color:var(--ink-soft);cursor:pointer;font-size:12px;padding:4px 8px;border-radius:8px;flex-shrink:0;}
+  .book-item .del:hover{background:var(--accent-tint);color:var(--accent-deep);}
+  .book-item a.mini-map{font-size:12px;color:var(--map-deep);font-weight:700;text-decoration:none;}
+
+  .admin-footer{margin-top:44px;text-align:center;}
+  .admin-link{font-size:12px;color:var(--ink-soft);background:none;border:none;cursor:pointer;text-decoration:underline;}
+  .disclaimer{text-align:center;font-size:11px;color:var(--ink-soft);margin-top:30px;}
+  .back-link{font-size:12px;color:var(--ink-soft);background:none;border:none;cursor:pointer;text-decoration:underline;margin-bottom:14px;display:inline-block;}
+
+  @media (max-width:480px){
+    .page{padding:48px 14px 60px;}
+    .hero h1{font-size:26px;}
+    .type-grid{grid-template-columns:repeat(2,1fr);}
+    .row2{grid-template-columns:1fr;}
+    .btn-row{flex-direction:column;}
+    .btn-row .btn-ghost{width:100%;}
+    .stats-row{flex-direction:column;}
+    .rail .tick .lbl{font-size:9.5px;}
+  }
+</style>
+</head>
+<body>
+<button class="lang-toggle" id="langToggle">EN</button>
+<div class="page">
+
+  <!-- ===================== VIEW: BOOK (step 1) ===================== -->
+  <div class="view active" id="view-book">
+    <div class="hero">
+      <div class="hero-top">
+        <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
+          <rect x="4" y="8" width="26" height="22" rx="4" fill="#fff" stroke="#3E3B41" stroke-width="1.4"/>
+          <path d="M4 14h26" stroke="#3E3B41" stroke-width="1.4"/>
+          <path d="M11 5v6M23 5v6" stroke="#3E3B41" stroke-width="1.4" stroke-linecap="round"/>
+          <circle cx="13" cy="21" r="2.4" fill="#A7B8D9"/>
+          <circle cx="21" cy="21" r="2.4" fill="#D9A7B0"/>
+        </svg>
+        <h1 class="heading" data-i18n="heroTitle">预约我的时间</h1>
+      </div>
+      <p class="sub" data-i18n="heroSub">挑一个想做的事，选个时间，我们就说定啦</p>
+    </div>
+
+    <div class="rail">
+      <div class="tick active" data-dot="book"><div class="dot"></div><div class="lbl" data-i18n="dotDetails">详情</div></div>
+      <div class="rline"></div>
+      <div class="tick" data-dot="time"><div class="dot"></div><div class="lbl" data-i18n="dotTime">时间</div></div>
+      <div class="rline"></div>
+      <div class="tick" data-dot="confirmed"><div class="dot"></div><div class="lbl" data-i18n="dotConfirmed">确认</div></div>
+    </div>
+
+    <div class="section">
+      <p class="section-title heading" data-i18n="step1Title">想约点什么</p>
+      <p class="section-sub" data-i18n="step1Sub">先挑一个类型，吃饭、看电影这类可以顺便留个地点（不填也能继续）</p>
+
+      <div class="field">
+        <label data-i18n="nameLabel">你的名字</label>
+        <input type="text" id="nameInput" data-i18n-ph="namePlaceholder" placeholder="怎么称呼你">
+      </div>
+
+      <div class="field">
+        <label data-i18n="occasionLabel">选择活动</label>
+        <div class="type-grid" id="typeGrid"></div>
+        <div class="custom-box" id="customBox">
+          <input type="text" id="customInput" data-i18n-ph="customPlaceholder" placeholder="想到了什么想做的">
+        </div>
+        <div class="loc-box" id="locBox">
+          <div class="field" style="margin-top:0">
+            <label data-i18n="locationLabel">在哪里见面（可选）</label>
+            <input type="text" id="locationInput" data-i18n-ph="locationPlaceholder" placeholder="比如：麦当劳">
+            <p class="map-note" data-i18n="mapHint">填了会自动帮你打开 Google 地图，不填也能继续下一步</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label data-i18n="companionsLabel">谁会加入我们</label>
+        <div class="companion-grid" id="companionGrid"></div>
+        <div class="who-box" id="whoBox">
+          <input type="text" id="whoInput" data-i18n-ph="companionsWhoPlaceholder" placeholder="还有谁会来（可选）">
+        </div>
+      </div>
+
+      <p class="error" id="step1Error" data-i18n="formError">再检查一下，姓名和活动还没选好</p>
+      <button class="btn btn-primary" id="step1Next" style="margin-top:10px" data-i18n="nextBtn">下一步 →</button>
+    </div>
+
+    <div class="admin-footer">
+      <button type="button" class="admin-link" id="adminEntryLink" data-i18n="adminEntry">管理预约</button>
+    </div>
+    <p class="disclaimer" data-i18n="disclaimer">此页面上的时间由页面所有者管理，管理入口仅供本人使用</p>
+  </div>
+
+  <!-- ===================== VIEW: TIME (step 2) ===================== -->
+  <div class="view" id="view-time">
+    <button type="button" class="back-link" data-goto="book" data-i18n="backBtn">← 返回</button>
+    <div class="rail">
+      <div class="tick" data-dot="book"><div class="dot"></div><div class="lbl" data-i18n="dotDetails">详情</div></div>
+      <div class="rline"></div>
+      <div class="tick active" data-dot="time"><div class="dot"></div><div class="lbl" data-i18n="dotTime">时间</div></div>
+      <div class="rline"></div>
+      <div class="tick" data-dot="confirmed"><div class="dot"></div><div class="lbl" data-i18n="dotConfirmed">确认</div></div>
+    </div>
+    <div class="summary-chip" id="timeSummaryChip"></div>
+
+    <div class="section">
+      <p class="section-title heading" data-i18n="timeTitle">选择开始和结束时间</p>
+      <p class="section-sub" data-i18n="timeSub">太靠近其他预约的时间会自动跳过</p>
+
+      <div class="date-strip" id="dateStrip"></div>
+
+      <div id="startSection">
+        <p class="section-title" style="font-size:13px;margin-top:10px" data-i18n="chooseStart">选择开始时间</p>
+        <div class="time-list" id="startList"></div>
+      </div>
+
+      <div id="endSection" style="display:none;margin-top:20px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <p class="section-title" style="font-size:13px;margin:0" data-i18n="chooseEnd">选择结束时间</p>
+          <button type="button" class="change-link" id="changeStartBtn" data-i18n="changeStart">更改开始时间</button>
+        </div>
+        <div class="time-list" id="endList"></div>
+      </div>
+
+      <p class="error" id="timeError" data-i18n="timeError">请选择完整的日期和时间</p>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" data-goto="book" data-i18n="backBtn">← 返回</button>
+      <button class="btn btn-primary" id="timeNext" data-i18n="confirmBtn">确认预约</button>
+    </div>
+  </div>
+
+  <!-- ===================== VIEW: CONFIRMED (step 3) ===================== -->
+  <div class="view" id="view-confirmed">
+    <div class="rail">
+      <div class="tick" data-dot="book"><div class="dot"></div><div class="lbl" data-i18n="dotDetails">详情</div></div>
+      <div class="rline"></div>
+      <div class="tick" data-dot="time"><div class="dot"></div><div class="lbl" data-i18n="dotTime">时间</div></div>
+      <div class="rline"></div>
+      <div class="tick active" data-dot="confirmed"><div class="dot"></div><div class="lbl" data-i18n="dotConfirmed">确认</div></div>
+    </div>
+    <div class="confirm-card" id="confirmCard"></div>
+    <button class="btn btn-ghost" id="startOverBtn" style="margin-top:18px;width:100%" data-i18n="startOverBtn">再约一个</button>
+  </div>
+
+  <!-- ===================== VIEW: ADMIN ===================== -->
+  <div class="view" id="view-admin">
+    <button type="button" class="back-link" data-goto="book" data-i18n="backBtn">← 返回</button>
+
+    <div id="adminGateWrap" class="admin-gate">
+      <p class="section-title heading" data-i18n="adminEntry">管理预约</p>
+      <div class="row2">
+        <input type="password" id="adminPass" data-i18n-ph="adminPassPlaceholder" placeholder="输入管理密码">
+        <button class="btn btn-primary" id="adminSubmit" data-i18n="adminEnterBtn">进入</button>
+      </div>
+      <p class="admin-error" id="adminError" data-i18n="adminErrorMsg">密码不对，再试一次</p>
+    </div>
+
+    <div id="adminContent" style="display:none">
+      <p class="section-title heading" data-i18n="adminTitle">我的完整日程</p>
+      <p class="section-sub" data-i18n="adminSub">未来两周内的所有预约</p>
+      <div class="stats-row">
+        <div class="stat-card"><div class="num" id="statCount">0</div><div class="lbl" data-i18n="statsLabel">已预约数</div></div>
+      </div>
+      <div id="upcomingList"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const TEXT = {
+  heroTitle:{zh:'预约我的时间', en:'Book Some Time'},
+  heroSub:{zh:'挑一个想做的事，选个时间，我们就说定啦', en:"Pick what you want to do, choose a time, and it's a plan."},
+  dotDetails:{zh:'详情', en:'Details'},
+  dotTime:{zh:'时间', en:'Time'},
+  dotConfirmed:{zh:'确认', en:'Confirmed'},
+  step1Title:{zh:'想约点什么', en:'What shall we do?'},
+  step1Sub:{zh:'先挑一个类型，吃饭、看电影这类可以顺便留个地点（不填也能继续）', en:'Pick a type — for meals and outings you can add a place too (optional)'},
+  nameLabel:{zh:'你的名字', en:'Your name'},
+  namePlaceholder:{zh:'怎么称呼你', en:'Your name'},
+  occasionLabel:{zh:'选择活动', en:'Choose an occasion'},
+  customPlaceholder:{zh:'想到了什么想做的', en:'What did you have in mind?'},
+  locationLabel:{zh:'在哪里见面（可选）', en:'Where to meet (optional)'},
+  locationPlaceholder:{zh:'比如：麦当劳', en:"e.g. McDonald's"},
+  mapHint:{zh:'填了会自动帮你打开 Google 地图，不填也能继续下一步', en:"I'll open Google Maps if filled — leave it blank and just move on"},
+  companionsLabel:{zh:'谁会加入我们', en:"Who's joining"},
+  companionsWhoPlaceholder:{zh:'还有谁会来（可选）', en:'Who else is joining?'},
+  formError:{zh:'再检查一下，姓名和活动还没选好', en:'Please add your name and pick an occasion'},
+  nextBtn:{zh:'下一步 →', en:'Next →'},
+  backBtn:{zh:'← 返回', en:'← Back'},
+  adminEntry:{zh:'管理预约', en:'Manage schedule'},
+  disclaimer:{zh:'此页面上的时间由页面所有者管理，管理入口仅供本人使用', en:'Times here are managed by the page owner; the admin entry is for owner use only.'},
+  timeTitle:{zh:'选择开始和结束时间', en:'Pick a start and end time'},
+  timeSub:{zh:'太靠近其他预约的时间会自动跳过', en:'Times too close to another plan are skipped'},
+  chooseStart:{zh:'选择开始时间', en:'Choose a start time'},
+  chooseEnd:{zh:'选择结束时间', en:'Choose an end time'},
+  changeStart:{zh:'更改开始时间', en:'change start'},
+  timeError:{zh:'请选择完整的日期和时间', en:'Please choose a full date and time'},
+  confirmBtn:{zh:'确认预约', en:'Confirm booking'},
+  startOverBtn:{zh:'再约一个', en:'Book another'},
+  bookedTitle:{zh:'预约成功了', en:"You're booked"},
+  withLabel:{zh:'与', en:'with'},
+  mapBtn:{zh:'在 Google 地图打开', en:'Open in Google Maps'},
+  mapBtnNote:{zh:'会帮你跳转到地点，但不会自动帮你订位', en:"Opens the place so you can reserve — it won't book the table for you"},
+  cancelBtn:{zh:'取消这个预约', en:'Cancel this booking'},
+  cancelledMsg:{zh:'这个预约已经取消了。', en:'This booking has been cancelled.'},
+  adminPassPlaceholder:{zh:'输入管理密码', en:'Admin password'},
+  adminEnterBtn:{zh:'进入', en:'Enter'},
+  adminErrorMsg:{zh:'密码不对，再试一次', en:'Wrong password, try again'},
+  adminTitle:{zh:'我的完整日程', en:'Your full schedule'},
+  adminSub:{zh:'未来两周内的所有预约', en:'Everything booked across the next two weeks'},
+  statsLabel:{zh:'已预约数', en:'Plans booked'},
+  emptySchedule:{zh:'还没有预约。', en:'No plans booked yet.'},
+  cancelItem:{zh:'取消', en:'Cancel'},
+  openStatus:{zh:'可选', en:'Open'},
+  blockedStatus:{zh:'太近了', en:'Too close'},
+  selectedStatus:{zh:'已选', en:'Selected'}
+};
+
+const TYPES = [
+  {id:'meal', emoji:'🍜', zh:'一起吃饭', en:'A Meal', place:true, c:'meal'},
+  {id:'movie', emoji:'🎬', zh:'看电影/娱乐', en:'Movie / Fun', place:true, c:'movie'},
+  {id:'coffee', emoji:'☕', zh:'咖啡闲聊', en:'Coffee Chat', place:true, c:'coffee'},
+  {id:'call', emoji:'💻', zh:'视频通话', en:'FaceTime', c:'call'},
+  {id:'study', emoji:'📚', zh:'学习/工作', en:'Study / Work', c:'study'},
+  {id:'custom', emoji:'✨', zh:'自定义', en:'Something Else', custom:true, c:'custom'}
+];
+
+const COMPANIONS = [
+  {id:'just2', emoji:'👫', zh:'就我们俩', en:'Just Us Two'},
+  {id:'group', emoji:'👯', zh:'还有其他人', en:'A Group'}
+];
+
+const ADMIN_PASSCODE = "1234";
+const BUFFER_MIN = 60;
+const DAY_START = 8*60, DAY_END = 21*60+30, MAX_DURATION = 240, STEP = 30;
+const DATE_RANGE_DAYS = 14;
+
+let lang = 'zh';
+let step1Data = null;
+let selectedTypeId = null;
+let selectedCompanionId = 'just2';
+let selectedDate = null;
+let selectedStart = null;
+let selectedEnd = null;
+let lastBooking = null;
+let adminUnlocked = false;
+
+/* ---------------- i18n ---------------- */
+function applyLang(){
+  document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+  document.querySelectorAll('[data-i18n]').forEach(el=>{ el.textContent = TEXT[el.dataset.i18n][lang]; });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{ el.placeholder = TEXT[el.dataset.i18nPh][lang]; });
+  document.getElementById('langToggle').textContent = lang === 'zh' ? 'EN' : '中文';
+  document.querySelectorAll('#typeGrid .type-card').forEach(c=>{
+    const t = TYPES.find(x=>x.id===c.dataset.id);
+    c.querySelector('.label').textContent = t[lang];
+  });
+  document.querySelectorAll('#companionGrid .companion-card').forEach(c=>{
+    const t = COMPANIONS.find(x=>x.id===c.dataset.id);
+    c.querySelector('.label').textContent = t[lang];
+  });
+  if(document.getElementById('view-time').classList.contains('active')){
+    renderTimeSummary();
+    buildDateStrip();
+    if(!selectedStart){ populateStartList(); } else { populateEndList(); }
+  }
+  if(document.getElementById('view-confirmed').classList.contains('active') && lastBooking){
+    renderConfirmation(lastBooking, !!lastBooking.__cancelled);
+  }
+  if(adminUnlocked) renderAdminList();
+}
+document.getElementById('langToggle').addEventListener('click', ()=>{
+  lang = lang === 'zh' ? 'en' : 'zh';
+  applyLang();
+});
+
+/* ---------------- routing ---------------- */
+function showView(name){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  document.querySelectorAll('[data-dot]').forEach(d=>{
+    d.classList.toggle('active', d.dataset.dot === name);
+  });
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+function route(){
+  const hash = window.location.hash.replace('#','') || 'book';
+  if(hash === 'time' && !step1Data){ window.location.hash = '#book'; return; }
+  if(hash === 'confirmed' && !lastBooking){ window.location.hash = '#book'; return; }
+  if(hash === 'admin'){
+    showView('admin');
+    if(adminUnlocked){
+      document.getElementById('adminGateWrap').style.display='none';
+      document.getElementById('adminContent').style.display='block';
+      renderAdminList();
+    } else {
+      document.getElementById('adminGateWrap').style.display='block';
+      document.getElementById('adminContent').style.display='none';
+    }
+    return;
+  }
+  showView(hash);
+  if(hash === 'time'){ prepareTimeView(); }
+}
+window.addEventListener('hashchange', route);
+document.querySelectorAll('[data-goto]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{ window.location.hash = '#' + btn.dataset.goto; });
+});
+
+/* ---------------- step 1: type + companions ---------------- */
+const typeGrid = document.getElementById('typeGrid');
+const customBox = document.getElementById('customBox');
+const locBox = document.getElementById('locBox');
+TYPES.forEach(t=>{
+  const card = document.createElement('div');
+  card.className = 'type-card';
+  card.dataset.id = t.id;
+  card.style.setProperty('--card-accent', `var(--t-${t.c})`);
+  card.style.setProperty('--card-deep', `var(--t-${t.c}-deep)`);
+  card.style.setProperty('--card-tint', `var(--t-${t.c}-tint)`);
+  card.innerHTML = `<span class="swatch" style="background:var(--t-${t.c})"></span><span class="emoji">${t.emoji}</span><span class="label">${t[lang]}</span>`;
+  card.addEventListener('click', ()=>{
+    document.querySelectorAll('#typeGrid .type-card').forEach(c=>c.classList.remove('selected'));
+    card.classList.add('selected');
+    selectedTypeId = t.id;
+    customBox.classList.toggle('show', !!t.custom);
+    locBox.classList.toggle('show', !!t.place || !!t.custom);
+    if(!t.place && !t.custom) document.getElementById('locationInput').value = '';
+    if(t.custom) document.getElementById('customInput').focus();
+  });
+  typeGrid.appendChild(card);
+});
+
+const companionGrid = document.getElementById('companionGrid');
+const whoBox = document.getElementById('whoBox');
+COMPANIONS.forEach(c=>{
+  const card = document.createElement('div');
+  card.className = 'companion-card' + (c.id === 'just2' ? ' selected' : '');
+  card.dataset.id = c.id;
+  card.innerHTML = `<span class="emoji">${c.emoji}</span><span class="label">${c[lang]}</span>`;
+  card.addEventListener('click', ()=>{
+    document.querySelectorAll('#companionGrid .companion-card').forEach(x=>x.classList.remove('selected'));
+    card.classList.add('selected');
+    selectedCompanionId = c.id;
+    whoBox.classList.toggle('show', c.id === 'group');
+  });
+  companionGrid.appendChild(card);
+});
+
+document.getElementById('step1Next').addEventListener('click', ()=>{
+  const errEl = document.getElementById('step1Error');
+  const name = document.getElementById('nameInput').value.trim();
+  const customText = document.getElementById('customInput').value.trim();
+  const locationVal = document.getElementById('locationInput').value.trim();
+  const isCustom = selectedTypeId === 'custom';
+  const typeObj = TYPES.find(t=>t.id===selectedTypeId);
+
+  if(!name || !selectedTypeId || (isCustom && !customText)){
+    errEl.classList.add('show');
+    return;
+  }
+  errEl.classList.remove('show');
+
+  step1Data = {
+    name,
+    typeId: selectedTypeId,
+    emoji: typeObj.emoji,
+    customText: isCustom ? customText : '',
+    location: locationVal,
+    companionId: selectedCompanionId,
+    who: document.getElementById('whoInput').value.trim()
+  };
+  window.location.hash = '#time';
+});
+
+/* ---------------- step 2: time ---------------- */
+function typeLabel(data){
+  if(data.typeId === 'custom') return data.customText;
+  return TYPES.find(x=>x.id===data.typeId)[lang];
+}
+
+function renderTimeSummary(){
+  if(!step1Data) return;
+  const startBit = selectedStart ? ' · ' + fmtTime(selectedStart) : '';
+  document.getElementById('timeSummaryChip').innerHTML =
+    `<span>${step1Data.emoji}</span> <b>${step1Data.name}</b> · ${typeLabel(step1Data)}${startBit}`;
+}
+
+const dateStrip = document.getElementById('dateStrip');
+const startSection = document.getElementById('startSection');
+const endSection = document.getElementById('endSection');
+const startList = document.getElementById('startList');
+const endList = document.getElementById('endList');
+
+function isoDate(d){ return d.toISOString().split('T')[0]; }
+function dowShort(d){ return ['SUN','MON','TUE','WED','THU','FRI','SAT'][d.getDay()]; }
+function dowZh(d){ return ['周日','周一','周二','周三','周四','周五','周六'][d.getDay()]; }
+
+function buildDateStrip(){
+  dateStrip.innerHTML = '';
+  const base = new Date();
+  for(let i=0;i<DATE_RANGE_DAYS;i++){
+    const d = new Date(base.getTime() + i*24*60*60*1000);
+    const iso = isoDate(d);
+    const chip = document.createElement('div');
+    chip.className = 'date-chip' + (iso === selectedDate ? ' selected' : '');
+    chip.dataset.date = iso;
+    chip.innerHTML = `<div class="dow">${lang==='zh' ? dowZh(d) : dowShort(d)}</div><div class="day">${d.getMonth()+1}/${d.getDate()}</div>`;
+    chip.addEventListener('click', ()=>{
+      selectedDate = iso;
+      selectedStart = null; selectedEnd = null;
+      document.querySelectorAll('.date-chip').forEach(c=>c.classList.remove('selected'));
+      chip.classList.add('selected');
+      endSection.style.display = 'none';
+      renderTimeSummary();
+      populateStartList();
+    });
+    dateStrip.appendChild(chip);
+  }
+}
+
+function prepareTimeView(){
+  if(!selectedDate) selectedDate = isoDate(new Date());
+  renderTimeSummary();
+  buildDateStrip();
+  if(selectedStart){ startSection.style.display='none'; populateEndList(); }
+  else { populateStartList(); }
+}
+
+function fmtTime(minutes){
+  const h = Math.floor(minutes/60), m = minutes%60;
+  const period = h < 12 ? 'AM' : 'PM';
+  let h12 = h % 12; if(h12 === 0) h12 = 12;
+  return h12 + ':' + String(m).padStart(2,'0') + ' ' + period;
+}
+
+async function bookingsForDate(dateStr){
+  const list = await loadBookings();
+  return list.filter(b => b.date === dateStr);
+}
+function rangesOverlap(aStart,aEnd,bStart,bEnd){
+  return aStart < bEnd && bStart < aEnd;
+}
+
+async function populateStartList(){
+  startSection.style.display = 'block';
+  endSection.style.display = 'none';
+  const dayBookings = await bookingsForDate(selectedDate);
+  const blocked = dayBookings.map(b => [b.startMinutes - BUFFER_MIN, b.endMinutes + BUFFER_MIN]);
+
+  startList.innerHTML = '';
+  for(let m = DAY_START; m <= DAY_END; m += STEP){
+    const isBlocked = blocked.some(([s,e]) => m > s && m < e);
+    const row = document.createElement('div');
+    row.className = 'time-row' + (isBlocked ? ' blocked' : '');
+    row.innerHTML = `<span class="t">${fmtTime(m)}</span><span class="status">${isBlocked ? TEXT.blockedStatus[lang] : TEXT.openStatus[lang]}</span>`;
+    if(!isBlocked){
+      row.addEventListener('click', ()=>{
+        selectedStart = m;
+        selectedEnd = null;
+        startSection.style.display = 'none';
+        renderTimeSummary();
+        populateEndList();
+      });
+    }
+    startList.appendChild(row);
+  }
+}
+
+async function populateEndList(){
+  endSection.style.display = 'block';
+  endList.innerHTML = '';
+  const dayBookings = await bookingsForDate(selectedDate);
+  const blocked = dayBookings.map(b => [b.startMinutes - BUFFER_MIN, b.endMinutes + BUFFER_MIN]);
+  const maxEnd = Math.min(selectedStart + MAX_DURATION, DAY_END + STEP);
+
+  for(let m = selectedStart + STEP; m <= maxEnd; m += STEP){
+    const overlaps = blocked.some(([s,e]) => rangesOverlap(selectedStart, m, s, e));
+    const row = document.createElement('div');
+    row.className = 'time-row' + (overlaps ? ' blocked' : '') + (m === selectedEnd ? ' selected' : '');
+    row.innerHTML = `<span class="t">${fmtTime(m)}</span><span class="status">${overlaps ? TEXT.blockedStatus[lang] : (m === selectedEnd ? TEXT.selectedStatus[lang] : TEXT.openStatus[lang])}</span>`;
+    if(!overlaps){
+      row.addEventListener('click', ()=>{
+        selectedEnd = m;
+        document.querySelectorAll('#endList .time-row').forEach(r=>{r.classList.remove('selected'); r.querySelector('.status').textContent = TEXT.openStatus[lang];});
+        row.classList.add('selected');
+        row.querySelector('.status').textContent = TEXT.selectedStatus[lang];
+      });
+    }
+    endList.appendChild(row);
+  }
+}
+
+document.getElementById('changeStartBtn').addEventListener('click', ()=>{
+  selectedStart = null; selectedEnd = null;
+  renderTimeSummary();
+  populateStartList();
+});
+
+document.getElementById('timeNext').addEventListener('click', async ()=>{
+  const errEl = document.getElementById('timeError');
+  if(!selectedDate || !selectedStart || !selectedEnd){
+    errEl.classList.add('show');
+    return;
+  }
+  errEl.classList.remove('show');
+
+  const booking = {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2,6),
+    name: step1Data.name,
+    typeId: step1Data.typeId,
+    emoji: step1Data.emoji,
+    customText: step1Data.customText,
+    location: step1Data.location,
+    companionId: step1Data.companionId,
+    who: step1Data.who,
+    date: selectedDate,
+    startMinutes: selectedStart,
+    endMinutes: selectedEnd
+  };
+
+  if(booking.location){
+    window.open(mapUrl(booking.location), '_blank');
+  }
+
+  const list = await loadBookings();
+  list.push(booking);
+  await saveBookings(list);
+
+  lastBooking = booking;
+  window.location.hash = '#confirmed';
+});
+
+/* ---------------- step 3: confirmation ---------------- */
+function mapUrl(place){
+  return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(place);
+}
+function fmtDate(d){
+  const dt = new Date(d + 'T00:00:00');
+  return `${dt.getMonth()+1}/${dt.getDate()} ${lang==='zh' ? dowZh(dt) : dowShort(dt)}`;
+}
+
+function renderConfirmation(booking, cancelled){
+  const card = document.getElementById('confirmCard');
+  const label = typeLabel(booking);
+  let html = `<span class="em">${booking.emoji}</span>
+    <h3 class="heading">${TEXT.bookedTitle[lang]}</h3>
+    <p class="who">${label} ${TEXT.withLabel[lang]} <b>${booking.name}</b>${booking.who ? ' & '+booking.who : ''}</p>
+    <div class="confirm-line">${fmtDate(booking.date)} · <b>${fmtTime(booking.startMinutes)} – ${fmtTime(booking.endMinutes)}</b></div>`;
+  if(booking.location){
+    html += `<div class="confirm-line">${booking.location}</div>`;
+  }
+  if(cancelled){
+    html += `<p class="cancelled-note">${TEXT.cancelledMsg[lang]}</p>`;
+  } else {
+    if(booking.location){
+      html += `<a class="map-btn" href="${mapUrl(booking.location)}" target="_blank" rel="noopener">${TEXT.mapBtn[lang]}</a>
+      <p class="map-note">${TEXT.mapBtnNote[lang]}</p>`;
+    }
+    html += `<button class="cancel-link" id="cancelBookingBtn">${TEXT.cancelBtn[lang]}</button>`;
+  }
+  card.innerHTML = html;
+  if(!cancelled){
+    document.getElementById('cancelBookingBtn').addEventListener('click', async ()=>{
+      const list = await loadBookings();
+      await saveBookings(list.filter(b=>b.id !== booking.id));
+      lastBooking.__cancelled = true;
+      renderConfirmation(booking, true);
+    });
+  }
+}
+
+document.getElementById('startOverBtn').addEventListener('click', ()=>{
+  step1Data = null;
+  lastBooking = null;
+  selectedTypeId = null;
+  selectedCompanionId = 'just2';
+  selectedDate = null; selectedStart = null; selectedEnd = null;
+  document.getElementById('nameInput').value='';
+  document.getElementById('customInput').value='';
+  document.getElementById('locationInput').value='';
+  document.getElementById('whoInput').value='';
+  document.querySelectorAll('#typeGrid .type-card, #companionGrid .companion-card').forEach(c=>c.classList.remove('selected'));
+  document.querySelector('#companionGrid .companion-card[data-id="just2"]').classList.add('selected');
+  customBox.classList.remove('show');
+  locBox.classList.remove('show');
+  whoBox.classList.remove('show');
+  window.location.hash = '#book';
+});
+
+/* ---------------- storage ---------------- */
+async function loadBookings(){
+  try{
+    const res = await window.storage.get('bookings', true);
+    return res && res.value ? JSON.parse(res.value) : [];
+  }catch(e){ return []; }
+}
+async function saveBookings(list){
+  try{ await window.storage.set('bookings', JSON.stringify(list), true); }
+  catch(e){ console.error('保存失败', e); }
+}
+
+/* ---------------- admin ---------------- */
+document.getElementById('adminEntryLink').addEventListener('click', ()=>{ window.location.hash = '#admin'; });
+document.getElementById('adminSubmit').addEventListener('click', unlockAdmin);
+document.getElementById('adminPass').addEventListener('keydown', e=>{ if(e.key==='Enter') unlockAdmin(); });
+
+function unlockAdmin(){
+  const pass = document.getElementById('adminPass');
+  const err = document.getElementById('adminError');
+  if(pass.value === ADMIN_PASSCODE){
+    adminUnlocked = true;
+    err.classList.remove('show');
+    pass.value = '';
+    document.getElementById('adminGateWrap').style.display='none';
+    document.getElementById('adminContent').style.display='block';
+    renderAdminList();
+  } else {
+    err.classList.add('show');
+  }
+}
+
+async function renderAdminList(){
+  const list = await loadBookings();
+  const now = new Date();
+  const twoWeeks = new Date(now.getTime() + 14*24*60*60*1000);
+  const upcoming = list.filter(b => {
+    const d = new Date(b.date + 'T00:00:00');
+    return d >= new Date(now.toDateString()) && d <= twoWeeks;
+  }).sort((a,b)=> (a.date+a.startMinutes).toString().localeCompare((b.date+b.startMinutes).toString()));
+
+  document.getElementById('statCount').textContent = upcoming.length;
+  const wrap = document.getElementById('upcomingList');
+  if(upcoming.length === 0){
+    wrap.innerHTML = `<div class="upcoming-empty">${TEXT.emptySchedule[lang]}</div>`;
+    return;
+  }
+  wrap.innerHTML = '';
+  upcoming.forEach(b=>{
+    const label = typeLabel(b);
+    const item = document.createElement('div');
+    item.className = 'book-item';
+    item.innerHTML = `
+      <span class="em">${b.emoji}</span>
+      <div class="info">
+        <div class="top">${label} · ${b.name}${b.who ? ' & '+b.who : ''}</div>
+        <div class="meta">${fmtDate(b.date)} · ${fmtTime(b.startMinutes)} – ${fmtTime(b.endMinutes)}${b.location ? ' · '+b.location : ''}</div>
+        ${b.location ? `<a class="mini-map" href="${mapUrl(b.location)}" target="_blank" rel="noopener">→ Maps</a>` : ''}
+      </div>
+      <button class="del" data-id="${b.id}">${TEXT.cancelItem[lang]}</button>
+    `;
+    wrap.appendChild(item);
+  });
+  wrap.querySelectorAll('.del').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const list = await loadBookings();
+      await saveBookings(list.filter(b=>b.id !== btn.dataset.id));
+      renderAdminList();
+    });
+  });
+}
+
+/* ---------------- init ---------------- */
+applyLang();
+route();
+</script>
+</body>
+</html>
