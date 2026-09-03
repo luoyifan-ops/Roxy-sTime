@@ -91,6 +91,18 @@
   .loc-box{margin-top:14px;display:none;}
   .loc-box.show{display:block;animation:fadein .18s ease;}
   .map-note{font-size:12px;color:var(--ink-soft);margin-top:6px;}
+  .call-box{margin-top:12px;display:none;}
+  .call-box.show{display:block;animation:fadein .18s ease;}
+  .option-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
+  .option-card{cursor:pointer;background:var(--paper);border:1.5px solid var(--line);border-radius:10px;padding:10px;text-align:center;font-size:12px;font-weight:700;transition:all .15s ease;}
+  .option-card.selected{border-color:var(--accent);background:var(--accent-tint);color:var(--accent-deep);}
+  .location-search{position:relative;}
+  .location-results{display:none;position:absolute;z-index:8;left:0;right:0;top:calc(100% + 5px);background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 28px rgba(62,59,65,.12);overflow:hidden;max-height:220px;overflow-y:auto;}
+  .location-results.show{display:block;}
+  .location-option{padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--line);font-size:12px;line-height:1.4;}
+  .location-option:last-child{border-bottom:none;}
+  .location-option:hover{background:var(--accent-tint);}
+  .location-loading{padding:10px 12px;color:var(--ink-soft);font-size:12px;}
 
   .companion-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
   .companion-card{
@@ -104,7 +116,7 @@
   .who-box{margin-top:10px;display:none;}
   .who-box.show{display:block;}
 
-  input[type=text], input[type=password], textarea{
+  input[type=text], input[type=email], input[type=password], textarea{
     width:100%;font-family:inherit;font-size:14px;padding:11px 14px;border-radius:10px;
     border:1.5px solid var(--line);background:#fff;color:var(--ink);outline:none;
     transition:border-color .15s ease;
@@ -118,6 +130,11 @@
 
   .error{color:var(--red);font-size:12px;margin-top:8px;display:none;}
   .error.show{display:block;}
+  .shake{animation:shake .36s ease;}
+  @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+  .email-panel{margin-top:18px;padding:16px;background:var(--accent-tint);border-radius:12px;}
+  .send-status{font-size:12px;margin-top:9px;color:var(--ink-soft);}
+  .send-status.error-text{color:var(--red);}
 
   .btn{
     padding:12px 20px;border:none;border-radius:10px;font-family:inherit;font-size:14px;
@@ -271,11 +288,24 @@
         <div class="custom-box" id="customBox">
           <input type="text" id="customInput" data-i18n-ph="customPlaceholder" placeholder="想到了什么想做的">
         </div>
+        <div class="call-box" id="callBox">
+          <div class="field" style="margin-top:0">
+            <label data-i18n="callMethodLabel">选择通话方式</label>
+            <div class="option-grid" id="callMethodGrid"></div>
+          </div>
+          <div class="field" id="meetingDetailBox" style="display:none">
+            <label data-i18n="meetingDetailLabel">账号或会议说明（可选）</label>
+            <input type="text" id="meetingDetailInput" data-i18n-ph="meetingDetailPlaceholder" placeholder="微信号、用户名或会议链接">
+          </div>
+        </div>
         <div class="loc-box" id="locBox">
           <div class="field" style="margin-top:0">
             <label data-i18n="locationLabel">在哪里见面（可选）</label>
-            <input type="text" id="locationInput" data-i18n-ph="locationPlaceholder" placeholder="比如：麦当劳">
-            <p class="map-note" data-i18n="mapHint">填了会自动帮你打开 Google 地图，不填也能继续下一步</p>
+            <div class="location-search">
+              <input type="text" id="locationInput" autocomplete="off" data-i18n-ph="locationPlaceholder" placeholder="搜索地点或直接自定义填写">
+              <div class="location-results" id="locationResults"></div>
+            </div>
+            <p class="map-note" data-i18n="mapHint">输入关键词可直接选择搜索结果；没有合适结果时保留你的自定义内容即可</p>
           </div>
         </div>
       </div>
@@ -348,6 +378,13 @@
       <div class="tick active" data-dot="confirmed"><div class="dot"></div><div class="lbl" data-i18n="dotConfirmed">确认</div></div>
     </div>
     <div class="confirm-card" id="confirmCard"></div>
+    <div class="email-panel" id="emailPanel">
+      <label data-i18n="emailLabel" style="font-size:13px;font-weight:700;display:block;margin-bottom:6px">接收预约确认的邮箱</label>
+      <input type="email" id="emailInput" autocomplete="email" data-i18n-ph="emailPlaceholder" placeholder="name@example.com">
+      <p class="map-note" data-i18n="emailHint">确认后，预约详情会同时发送给你和页面所有者</p>
+      <button class="btn btn-primary" id="finalizeBtn" style="margin-top:10px" data-i18n="finalizeBtn">确认并发送邮件</button>
+      <p class="send-status" id="sendStatus" aria-live="polite"></p>
+    </div>
     <button class="btn btn-ghost" id="startOverBtn" style="margin-top:18px;width:100%" data-i18n="startOverBtn">再约一个</button>
   </div>
 
@@ -390,8 +427,11 @@ const TEXT = {
   occasionLabel:{zh:'选择活动', en:'Choose an occasion'},
   customPlaceholder:{zh:'想到了什么想做的', en:'What did you have in mind?'},
   locationLabel:{zh:'在哪里见面（可选）', en:'Where to meet (optional)'},
-  locationPlaceholder:{zh:'比如：麦当劳', en:"e.g. McDonald's"},
-  mapHint:{zh:'填了会自动帮你打开 Google 地图，不填也能继续下一步', en:"I'll open Google Maps if filled — leave it blank and just move on"},
+  locationPlaceholder:{zh:'搜索地点或直接自定义填写', en:'Search a place or enter your own'},
+  mapHint:{zh:'输入关键词可直接选择搜索结果；没有合适结果时保留你的自定义内容即可', en:'Choose a search result, or keep your own custom text if nothing matches'},
+  callMethodLabel:{zh:'选择通话方式', en:'Choose a call method'},
+  meetingDetailLabel:{zh:'账号或会议说明（可选）', en:'Account or meeting details (optional)'},
+  meetingDetailPlaceholder:{zh:'微信号、用户名或会议链接', en:'WeChat ID, username, or meeting link'},
   companionsLabel:{zh:'谁会加入我们', en:"Who's joining"},
   companionsWhoPlaceholder:{zh:'还有谁会来（可选）', en:'Who else is joining?'},
   formError:{zh:'再检查一下，姓名和活动还没选好', en:'Please add your name and pick an occasion'},
@@ -405,9 +445,19 @@ const TEXT = {
   chooseEnd:{zh:'选择结束时间', en:'Choose an end time'},
   changeStart:{zh:'更改开始时间', en:'change start'},
   timeError:{zh:'请选择完整的日期和时间', en:'Please choose a full date and time'},
-  confirmBtn:{zh:'确认预约', en:'Confirm booking'},
+  confirmBtn:{zh:'检查预约', en:'Review booking'},
+  emailLabel:{zh:'接收预约确认的邮箱', en:'Email for booking confirmation'},
+  emailPlaceholder:{zh:'name@example.com', en:'name@example.com'},
+  emailHint:{zh:'确认后，预约详情会同时发送给你和页面所有者', en:'Confirmation details will be emailed to you and the page owner'},
+  finalizeBtn:{zh:'确认并发送邮件', en:'Confirm & send emails'},
+  sendingEmail:{zh:'正在创建预约并发送邮件…', en:'Creating booking and sending emails…'},
+  invalidEmail:{zh:'请填写有效的邮箱地址', en:'Please enter a valid email address'},
+  emailSent:{zh:'预约邮件已同时发送给你和页面所有者。', en:'Confirmation emails were sent to you and the page owner.'},
+  emailNotConfigured:{zh:'预约已保存。邮件服务尚未配置，请按文件内说明填写 EmailJS 参数。', en:'Booking saved. Email is not configured yet; add the EmailJS values described in the file.'},
+  emailFailed:{zh:'预约已保存，但邮件发送失败，请稍后联系页面所有者确认。', en:'Booking saved, but email delivery failed. Please contact the page owner to confirm.'},
   startOverBtn:{zh:'再约一个', en:'Book another'},
   bookedTitle:{zh:'预约成功了', en:"You're booked"},
+  reviewTitle:{zh:'确认预约信息', en:'Review your booking'},
   withLabel:{zh:'与', en:'with'},
   mapBtn:{zh:'在 Google 地图打开', en:'Open in Google Maps'},
   mapBtnNote:{zh:'会帮你跳转到地点，但不会自动帮你订位', en:"Opens the place so you can reserve — it won't book the table for you"},
@@ -430,7 +480,7 @@ const TYPES = [
   {id:'meal', emoji:'🍜', zh:'一起吃饭', en:'A Meal', place:true, c:'meal'},
   {id:'movie', emoji:'🎬', zh:'看电影/娱乐', en:'Movie / Fun', place:true, c:'movie'},
   {id:'coffee', emoji:'☕', zh:'咖啡闲聊', en:'Coffee Chat', place:true, c:'coffee'},
-  {id:'call', emoji:'💻', zh:'视频通话', en:'FaceTime', c:'call'},
+  {id:'call', emoji:'💻', zh:'视频通话', en:'Video Call', c:'call'},
   {id:'study', emoji:'📚', zh:'学习/工作', en:'Study / Work', c:'study'},
   {id:'custom', emoji:'✨', zh:'自定义', en:'Something Else', custom:true, c:'custom'}
 ];
@@ -440,6 +490,17 @@ const COMPANIONS = [
   {id:'group', emoji:'👯', zh:'还有其他人', en:'A Group'}
 ];
 
+const CALL_METHODS = [
+  {id:'wechat', emoji:'💬', zh:'微信', en:'WeChat'},
+  {id:'instagram', emoji:'📷', zh:'Instagram', en:'Instagram'},
+  {id:'facetime', emoji:'📱', zh:'FaceTime', en:'FaceTime'},
+  {id:'meeting', emoji:'🎥', zh:'预约线上会议', en:'Online Meeting'}
+];
+
+/* EmailJS 配置：在 emailjs.com 创建服务和模板后填写以下四项。
+   模板变量：to_email, owner_email, guest_name, activity, date, time, location, call_method。 */
+const EMAIL_CONFIG = { publicKey:'', serviceId:'', templateId:'', ownerEmail:'' };
+
 const ADMIN_PASSCODE = "1234";
 const BUFFER_MIN = 60;
 const DAY_START = 8*60, DAY_END = 21*60+30, MAX_DURATION = 240, STEP = 30;
@@ -448,6 +509,7 @@ const DATE_RANGE_DAYS = 14;
 let lang = 'zh';
 let step1Data = null;
 let selectedTypeId = null;
+let selectedCallMethodId = null;
 let selectedCompanionId = 'just2';
 let selectedDate = null;
 let selectedStart = null;
@@ -468,6 +530,10 @@ function applyLang(){
   document.querySelectorAll('#companionGrid .companion-card').forEach(c=>{
     const t = COMPANIONS.find(x=>x.id===c.dataset.id);
     c.querySelector('.label').textContent = t[lang];
+  });
+  document.querySelectorAll('#callMethodGrid .option-card').forEach(c=>{
+    const t = CALL_METHODS.find(x=>x.id===c.dataset.id);
+    c.textContent = `${t.emoji} ${t[lang]}`;
   });
   if(document.getElementById('view-time').classList.contains('active')){
     renderTimeSummary();
@@ -511,6 +577,7 @@ function route(){
   }
   showView(hash);
   if(hash === 'time'){ prepareTimeView(); }
+  if(hash === 'confirmed' && lastBooking){ renderConfirmation(lastBooking, !!lastBooking.__cancelled); }
 }
 window.addEventListener('hashchange', route);
 document.querySelectorAll('[data-goto]').forEach(btn=>{
@@ -521,6 +588,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
 const typeGrid = document.getElementById('typeGrid');
 const customBox = document.getElementById('customBox');
 const locBox = document.getElementById('locBox');
+const callBox = document.getElementById('callBox');
 TYPES.forEach(t=>{
   const card = document.createElement('div');
   card.className = 'type-card';
@@ -535,11 +603,67 @@ TYPES.forEach(t=>{
     selectedTypeId = t.id;
     customBox.classList.toggle('show', !!t.custom);
     locBox.classList.toggle('show', !!t.place || !!t.custom);
+    callBox.classList.toggle('show', t.id === 'call');
     if(!t.place && !t.custom) document.getElementById('locationInput').value = '';
     if(t.custom) document.getElementById('customInput').focus();
   });
   typeGrid.appendChild(card);
 });
+
+const callMethodGrid = document.getElementById('callMethodGrid');
+CALL_METHODS.forEach(method=>{
+  const card = document.createElement('div');
+  card.className = 'option-card';
+  card.dataset.id = method.id;
+  card.textContent = `${method.emoji} ${method[lang]}`;
+  card.addEventListener('click', ()=>{
+    callMethodGrid.querySelectorAll('.option-card').forEach(x=>x.classList.remove('selected'));
+    card.classList.add('selected');
+    selectedCallMethodId = method.id;
+    document.getElementById('meetingDetailBox').style.display = 'block';
+  });
+  callMethodGrid.appendChild(card);
+});
+
+/* OpenStreetMap 地点搜索；网络不可用时输入框仍可直接填写自定义地点。 */
+const locationInput = document.getElementById('locationInput');
+const locationResults = document.getElementById('locationResults');
+let locationTimer = null;
+locationInput.addEventListener('input', ()=>{
+  clearTimeout(locationTimer);
+  const query = locationInput.value.trim();
+  if(query.length < 2){ locationResults.classList.remove('show'); return; }
+  locationResults.innerHTML = `<div class="location-loading">${lang==='zh'?'正在搜索地点…':'Searching places…'}</div>`;
+  locationResults.classList.add('show');
+  locationTimer = setTimeout(()=>searchLocations(query), 350);
+});
+async function searchLocations(query){
+  try{
+    const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&accept-language=${lang==='zh'?'zh-CN':'en'}&q=${encodeURIComponent(query)}`;
+    const res = await fetch(url, {headers:{Accept:'application/json'}});
+    if(!res.ok) throw new Error('search failed');
+    const places = await res.json();
+    if(locationInput.value.trim() !== query) return;
+    locationResults.innerHTML = '';
+    if(!places.length){
+      locationResults.innerHTML = `<div class="location-loading">${lang==='zh'?'没有匹配结果，可保留自定义地点':'No match; keep your custom location'}</div>`;
+      return;
+    }
+    places.forEach(place=>{
+      const option = document.createElement('div');
+      option.className = 'location-option';
+      option.textContent = place.display_name;
+      option.addEventListener('click', ()=>{
+        locationInput.value = place.display_name;
+        locationResults.classList.remove('show');
+      });
+      locationResults.appendChild(option);
+    });
+  }catch(e){
+    locationResults.innerHTML = `<div class="location-loading">${lang==='zh'?'搜索暂不可用，可直接填写自定义地点':'Search unavailable; enter a custom location'}</div>`;
+  }
+}
+document.addEventListener('click', e=>{ if(!e.target.closest('.location-search')) locationResults.classList.remove('show'); });
 
 const companionGrid = document.getElementById('companionGrid');
 const whoBox = document.getElementById('whoBox');
@@ -565,7 +689,7 @@ document.getElementById('step1Next').addEventListener('click', ()=>{
   const isCustom = selectedTypeId === 'custom';
   const typeObj = TYPES.find(t=>t.id===selectedTypeId);
 
-  if(!name || !selectedTypeId || (isCustom && !customText)){
+  if(!name || !selectedTypeId || (isCustom && !customText) || (selectedTypeId === 'call' && !selectedCallMethodId)){
     errEl.classList.add('show');
     return;
   }
@@ -579,6 +703,8 @@ document.getElementById('step1Next').addEventListener('click', ()=>{
     location: locationVal,
     companionId: selectedCompanionId,
     who: document.getElementById('whoInput').value.trim()
+    ,callMethodId: selectedTypeId === 'call' ? selectedCallMethodId : ''
+    ,meetingDetail: selectedTypeId === 'call' ? document.getElementById('meetingDetailInput').value.trim() : ''
   };
   window.location.hash = '#time';
 });
@@ -711,6 +837,11 @@ document.getElementById('timeNext').addEventListener('click', async ()=>{
   const errEl = document.getElementById('timeError');
   if(!selectedDate || !selectedStart || !selectedEnd){
     errEl.classList.add('show');
+    const target = selectedStart && !selectedEnd ? endSection : document.getElementById('view-time');
+    target.classList.remove('shake');
+    void target.offsetWidth;
+    target.classList.add('shake');
+    if(selectedStart && !selectedEnd) endSection.scrollIntoView({behavior:'smooth', block:'center'});
     return;
   }
   errEl.classList.remove('show');
@@ -724,18 +855,12 @@ document.getElementById('timeNext').addEventListener('click', async ()=>{
     location: step1Data.location,
     companionId: step1Data.companionId,
     who: step1Data.who,
+    callMethodId: step1Data.callMethodId,
+    meetingDetail: step1Data.meetingDetail,
     date: selectedDate,
     startMinutes: selectedStart,
     endMinutes: selectedEnd
   };
-
-  if(booking.location){
-    window.open(mapUrl(booking.location), '_blank');
-  }
-
-  const list = await loadBookings();
-  list.push(booking);
-  await saveBookings(list);
 
   lastBooking = booking;
   window.location.hash = '#confirmed';
@@ -754,23 +879,24 @@ function renderConfirmation(booking, cancelled){
   const card = document.getElementById('confirmCard');
   const label = typeLabel(booking);
   let html = `<span class="em">${booking.emoji}</span>
-    <h3 class="heading">${TEXT.bookedTitle[lang]}</h3>
+    <h3 class="heading">${booking.__saved ? TEXT.bookedTitle[lang] : TEXT.reviewTitle[lang]}</h3>
     <p class="who">${label} ${TEXT.withLabel[lang]} <b>${booking.name}</b>${booking.who ? ' & '+booking.who : ''}</p>
     <div class="confirm-line">${fmtDate(booking.date)} · <b>${fmtTime(booking.startMinutes)} – ${fmtTime(booking.endMinutes)}</b></div>`;
+  if(booking.callMethodId){
+    const method = CALL_METHODS.find(x=>x.id===booking.callMethodId);
+    html += `<div class="confirm-line">${method.emoji} <b>${method[lang]}</b>${booking.meetingDetail ? ' · '+escapeHtml(booking.meetingDetail) : ''}</div>`;
+  }
   if(booking.location){
-    html += `<div class="confirm-line">${booking.location}</div>`;
+    html += `<div class="confirm-line">📍 <b>${escapeHtml(booking.location)}</b></div>`;
   }
   if(cancelled){
     html += `<p class="cancelled-note">${TEXT.cancelledMsg[lang]}</p>`;
   } else {
-    if(booking.location){
-      html += `<a class="map-btn" href="${mapUrl(booking.location)}" target="_blank" rel="noopener">${TEXT.mapBtn[lang]}</a>
-      <p class="map-note">${TEXT.mapBtnNote[lang]}</p>`;
-    }
-    html += `<button class="cancel-link" id="cancelBookingBtn">${TEXT.cancelBtn[lang]}</button>`;
+    if(booking.__saved) html += `<button class="cancel-link" id="cancelBookingBtn">${TEXT.cancelBtn[lang]}</button>`;
   }
   card.innerHTML = html;
-  if(!cancelled){
+  document.getElementById('emailPanel').style.display = booking.__saved || cancelled ? 'none' : 'block';
+  if(!cancelled && booking.__saved){
     document.getElementById('cancelBookingBtn').addEventListener('click', async ()=>{
       const list = await loadBookings();
       await saveBookings(list.filter(b=>b.id !== booking.id));
@@ -780,20 +906,83 @@ function renderConfirmation(booking, cancelled){
   }
 }
 
+function escapeHtml(value){
+  return String(value || '').replace(/[&<>'"]/g, ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+}
+
+document.getElementById('finalizeBtn').addEventListener('click', async ()=>{
+  const input = document.getElementById('emailInput');
+  const status = document.getElementById('sendStatus');
+  const button = document.getElementById('finalizeBtn');
+  const email = input.value.trim();
+  if(!/^\S+@\S+\.\S+$/.test(email)){
+    status.textContent = TEXT.invalidEmail[lang]; status.className = 'send-status error-text';
+    input.focus(); return;
+  }
+  button.disabled = true;
+  status.textContent = TEXT.sendingEmail[lang]; status.className = 'send-status';
+  lastBooking.email = email;
+  const list = await loadBookings();
+  list.push(lastBooking);
+  await saveBookings(list);
+  let resultKey = 'emailNotConfigured';
+  if(Object.values(EMAIL_CONFIG).every(Boolean)){
+    try{
+      await sendBookingEmail(lastBooking);
+      resultKey = 'emailSent';
+    }catch(e){ resultKey = 'emailFailed'; }
+  }
+  lastBooking.__saved = true;
+  renderConfirmation(lastBooking, false);
+  document.getElementById('emailPanel').style.display = 'block';
+  input.disabled = true; button.style.display = 'none';
+  status.textContent = TEXT[resultKey][lang];
+  status.className = 'send-status' + (resultKey === 'emailFailed' ? ' error-text' : '');
+});
+
+async function sendBookingEmail(booking){
+  const method = booking.callMethodId ? CALL_METHODS.find(x=>x.id===booking.callMethodId)[lang] : '';
+  const params = {
+    to_email: booking.email,
+    owner_email: EMAIL_CONFIG.ownerEmail,
+    guest_name: booking.name,
+    activity: typeLabel(booking),
+    date: fmtDate(booking.date),
+    time: `${fmtTime(booking.startMinutes)} – ${fmtTime(booking.endMinutes)}`,
+    location: booking.location || booking.meetingDetail || (lang==='zh'?'未填写':'Not specified'),
+    call_method: method
+  };
+  const res = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({service_id:EMAIL_CONFIG.serviceId,template_id:EMAIL_CONFIG.templateId,user_id:EMAIL_CONFIG.publicKey,template_params:params})
+  });
+  if(!res.ok) throw new Error('EmailJS send failed');
+}
+
 document.getElementById('startOverBtn').addEventListener('click', ()=>{
   step1Data = null;
   lastBooking = null;
   selectedTypeId = null;
+  selectedCallMethodId = null;
   selectedCompanionId = 'just2';
   selectedDate = null; selectedStart = null; selectedEnd = null;
   document.getElementById('nameInput').value='';
   document.getElementById('customInput').value='';
   document.getElementById('locationInput').value='';
   document.getElementById('whoInput').value='';
+  document.getElementById('meetingDetailInput').value='';
+  document.getElementById('emailInput').value='';
+  document.getElementById('emailInput').disabled=false;
+  document.getElementById('finalizeBtn').disabled=false;
+  document.getElementById('finalizeBtn').style.display='block';
+  document.getElementById('sendStatus').textContent='';
   document.querySelectorAll('#typeGrid .type-card, #companionGrid .companion-card').forEach(c=>c.classList.remove('selected'));
   document.querySelector('#companionGrid .companion-card[data-id="just2"]').classList.add('selected');
   customBox.classList.remove('show');
   locBox.classList.remove('show');
+  callBox.classList.remove('show');
+  callMethodGrid.querySelectorAll('.option-card').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('meetingDetailBox').style.display='none';
   whoBox.classList.remove('show');
   window.location.hash = '#book';
 });
@@ -801,12 +990,18 @@ document.getElementById('startOverBtn').addEventListener('click', ()=>{
 /* ---------------- storage ---------------- */
 async function loadBookings(){
   try{
-    const res = await window.storage.get('bookings', true);
-    return res && res.value ? JSON.parse(res.value) : [];
+    if(window.storage){
+      const res = await window.storage.get('bookings', true);
+      return res && res.value ? JSON.parse(res.value) : [];
+    }
+    return JSON.parse(localStorage.getItem('bookings') || '[]');
   }catch(e){ return []; }
 }
 async function saveBookings(list){
-  try{ await window.storage.set('bookings', JSON.stringify(list), true); }
+  try{
+    if(window.storage) await window.storage.set('bookings', JSON.stringify(list), true);
+    else localStorage.setItem('bookings', JSON.stringify(list));
+  }
   catch(e){ console.error('保存失败', e); }
 }
 
